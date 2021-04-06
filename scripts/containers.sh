@@ -14,12 +14,12 @@ function unset_env() {
 }
 
 function package_led_in_jetty_image() {
-  pushd "${ROOT_DIR}/led-server-dist"
+  pushd "${ROOT_DIR}/spring-kubernetes-dist"
   mvn package -Dpackaging=true -Pdocker
   popd
 }
 
-function is_oracle_up() {
+function is_mysql_up() {
   DOCKER_STATUS="$(mktemp)"
   docker ps > "$DOCKER_STATUS"
   if grep -q "healthy" "$DOCKER_STATUS"
@@ -28,13 +28,13 @@ function is_oracle_up() {
   fi
 }
 
-function wait_for_oracle_health() {
+function wait_for_mysql_health() {
   echo -n "===> Waiting for containers to be up (db & jetty):"
 
   while true; do
-	local oracle_is_up
-	oracle_is_up="$(is_oracle_up)"
-	if [ "$oracle_is_up" == "0" ]
+	local mysql_is_up
+	mysql_is_up="$(is_mysql_up)"
+	if [ "$mysql_is_up" == "0" ]
 	then
 	  echo -n "." && sleep 1
 	else
@@ -52,24 +52,18 @@ function health(){
 function start_containers() {
 
   set_env
-  docker-compose \
-  -f docker-compose.yml \
-  -f docker-compose.override.yml \
-  -f led-server-dist/docker-compose.yml \
-  -f led-server-dist/docker-compose.override.yml \
-  up --detach --force-recreate
+  docker-compose -f docker-compose.yml -f docker-compose.override.yml up --detach --force-recreate
   unset_env
 
 }
 
 function stop_containers() {
-  docker ps --format "{{.Names}}" | grep led-server | xargs docker kill || true
+  docker ps --format "{{.Names}}" | grep spring-kubernetes | xargs docker kill || true
 
 }
 
 function start() {
   stop_containers
-  package_led_in_jetty_image
   start_containers
   health
 }

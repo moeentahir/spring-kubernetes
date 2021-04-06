@@ -1,0 +1,9 @@
+
+version: '3'
+
+# this overrides the default docker-compose.yml file for running some things locally.
+# specifically it maps the ports of mysql to localhost
+services:
+  mysql-db:
+    ports:
+      - 0.0.0.0:3306:3306

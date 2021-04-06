@@ -19,14 +19,14 @@ function it_wasnt_me() {
 function jetty_start() {
 	it_wasnt_me
 	echo -n "Starting Jetty "
-	pushd "${ROOT_DIR}/led-server-ws"
+	pushd "${ROOT_DIR}/spring-kubernetes-ws"
 	mvn jetty:run > "$JETTY_OUTPUT" &
 	popd
 	wait_for_jetty_startup
 }
 
 function jetty_stop() {
-	pushd "${ROOT_DIR}/led-server-ws"
+	pushd "${ROOT_DIR}/spring-kubernetes-ws"
 	echo -n "Stopping Jetty ..."
 	mvn jetty:stop > "$JETTY_OUTPUT" &
 	echo -n " done"
@@ -66,7 +66,7 @@ function test_unit() {
 
 function test_component(){
   echo "==============Running component tests===================="
-  pushd "${ROOT_DIR}/led-server-component-test"
+  pushd "${ROOT_DIR}/spring-kubernetes-component-test"
   mvn clean test -Dtest-component=component
   popd
   echo "==============Finished running component tests===================="
@@ -74,14 +74,14 @@ function test_component(){
 
 function test_component_ci(){
   echo "==============Running component tests===================="
-  pushd "${ROOT_DIR}/led-server-component-test"
+  pushd "${ROOT_DIR}/spring-kubernetes-component-test"
   mvn -Dled.server.deployment.host="$LEDGER_PORT_8080_TCP_ADDR" -Dtest-component=component clean test
   popd
   echo "==============Finished running component tests===================="
 }
 
 function test_integration() {
-	pushd "${ROOT_DIR}/led-server-repository"
+	pushd "${ROOT_DIR}/spring-kubernetes-repository"
 	mvn clean test -Dintegration-test-dao=dao -Pjacoco
 	popd "$ROOT_DIR"
 }
@@ -93,21 +93,21 @@ function test_contracts() {
 
 
 function db_setup(){
-  ./scripts/src/containers.sh wait_for_oracle_health
+  ./scripts/containers.sh wait_for_mysql_health
 	pushd "${ROOT_DIR}/led-db-dist"
-	mvn -Dflyway=true -Pdev flyway:clean flyway:migrate
+#	mvn -Dflyway=true -Pdev flyway:clean flyway:migrate
 	popd
 }
 
 function db_setup_ci(){
-  ./scripts/src/containers.sh wait_for_oracle_health
+  ./scripts/containers.sh wait_for_mysql_health
 	pushd "${ROOT_DIR}/led-db-dist"
 	mvn -Dflyway=true -Pci flyway:clean flyway:migrate
 	popd
 }
 
 function db_setup_componenttest_ci(){
-  ./scripts/src/containers.sh wait_for_oracle_health
+  ./scripts/containers.sh wait_for_mysql_health
 	pushd "${ROOT_DIR}/led-db-dist"
 	mvn -Pci -Dflyway=true flyway:clean flyway:migrate
 	mvn verify -Pci -Punpack -Pflyway-component-test flyway:migrate
@@ -115,7 +115,7 @@ function db_setup_componenttest_ci(){
 }
 
 function db_setup_componenttest(){
-  ./scripts/src/containers.sh wait_for_oracle_health
+  ./scripts/containers.sh wait_for_mysql_health
 	pushd "${ROOT_DIR}/led-db-dist"
 	mvn -Pdev -Dflyway=true flyway:clean flyway:migrate
 	mvn verify -Pdev -Punpack -Pflyway-component-test flyway:migrate
@@ -128,7 +128,7 @@ function jetty_compile_and_start() {
 }
 
 function start_containers() {
-  ./scripts/src/containers.sh start
+  ./scripts/containers.sh start
 }
 
 "$@"
